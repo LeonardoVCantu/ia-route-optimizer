@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: ingestion-api
+
+  jpa:
+    properties:
+      hibernate:
+        ddl-auto: validate
+        show-sql: true
+        temp:
+          use_jdbc_metadata_defaults: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  config:
+    import:
+      - aws-parameterstore:/logistica/db/
+      - aws-secretsmanager:db-logistica-secret
+
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: us-east-1
+      credentials:
+        access-key: test
+        secret-key: test
+      sqs:
+        endpoint: http://localhost:4566
+      secretsmanager:
+        endpoint: http://localhost:4566
+        region: us-east-1
+      parameterstore:
+        endpoint: http://localhost:4566
+
+  datasource:
+    url: ${url}
+    username: ${db_user}
+    password: ${db_pass}
+    driver-class-name: org.postgresql.Driver
+
+app:
+  queues:
+    pedidos-rota: fila-pedidos-rota
+    rotas-finalizadas: fila-rotas-finalizadas

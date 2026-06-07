@@ -1,0 +1,51 @@
+services:
+
+  postgres-db:
+    image: postgres:16-alpine
+    container_name: route-optimizer-db
+    environment:
+      POSTGRES_DB: route_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+
+
+  localstack:
+    image: localstack/localstack:3.0
+    container_name: route-optimizer-aws
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,iam,sts,secretsmanager,ssm,sqs
+      - DEFAULT_REGION=us-east-1
+      - ACTIVATE_PRO=0
+      - DEBUG=1
+    volumes:
+      - "./init-aws:/etc/localstack/init/ready.d"
+
+
+  ollama:
+    image: ollama/ollama
+    container_name: route-optimizer-ai
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
+  ollama-pull-model:
+    image: curlimages/curl:latest
+    container_name: ollama-setup
+    depends_on:
+      - ollama
+    entrypoint: [ "/bin/sh", "-c" ]
+    command: |
+      "sleep 5;
+      curl http://ollama:11434/api/pull -d '{\"name\": \"llama3.1:8b\"}'"
+
+volumes:
+  ollama_data:
+  postgres_data:

@@ -1,0 +1,61 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: route-worker
+
+  jpa:
+    properties:
+      hibernate:
+        temp:
+          use_jdbc_metadata_defaults: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+  config:
+    import:
+      - aws-parameterstore:/logistica/db/
+      - aws-secretsmanager:db-logistica-secret
+
+  cloud:
+    aws:
+      endpoint: http://localhost:4566
+      region:
+        static: us-east-1
+      credentials:
+        access-key: test
+        secret-key: test
+      sqs:
+        endpoint: http://localhost:4566
+      secretsmanager:
+        endpoint: http://localhost:4566
+        region: us-east-1
+      parameterstore:
+        endpoint: http://localhost:4566
+
+  datasource:
+    url: ${url}
+    username: ${db_user}
+    password: ${db_pass}
+    driver-class-name: org.postgresql.Driver
+
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: llama3.1:8b
+        options:
+          temperature: 0.1
+          top-p: 0.9
+          num-ctx: 4096
+
+app:
+  s3:
+    endpoint: ${AWS_S3_ENDPOINT:http://localhost:4566}
+    region: ${AWS_S3_REGION:us-east-1}
+    access-key: ${AWS_S3_ACCESS_KEY:test}
+    secret-key: ${AWS_S3_SECRET_KEY:test}
+    bucket-name: bucket-resultados-rotas
+    force-path-style: ${AWS_S3_PATH_STYLE:true}
+  queues:
+    pedidos-rota: fila-pedidos-rota
+    rotas-finalizadas: fila-rotas-finalizadas
